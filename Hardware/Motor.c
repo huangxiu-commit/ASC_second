@@ -14,29 +14,29 @@ void Motor_Init(void)
 	PWM_Init();
 }
 
-void Motor_SetSpeed(int8_t Speed)
+void Motor_SetSpeed(int8_t PWM)
 {
-	if(Speed > 100)
+	if(PWM > 100)
 	{
-		Speed = 100;
+		PWM = 100;
 	}
 	
-	if(Speed < -100)
+	if(PWM < -100)
 	{
-		Speed = -100;
+		PWM = -100;
 	}
 	
-	if(Speed >= 0)
+	if(PWM >= 0)
 	{
 		GPIO_SetBits(GPIOB, GPIO_Pin_12);
 		GPIO_ResetBits(GPIOB, GPIO_Pin_13);
-		PWM_SetCompare3(Speed);
+		PWM_SetCompare3(PWM);
 	}
 	else
 	{
 		GPIO_ResetBits(GPIOB, GPIO_Pin_12);
 		GPIO_SetBits(GPIOB, GPIO_Pin_13);
-		PWM_SetCompare3(-Speed);
+		PWM_SetCompare3(-PWM);
 	}
 }
 

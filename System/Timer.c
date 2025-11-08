@@ -24,7 +24,7 @@ void Timer_Init(void)
 	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = TIM1_UP_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//控制按键,抢占优先级最高
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//控制按键和电机测速,抢占优先级低于串口
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 	NVIC_Init(&NVIC_InitStructure);
 	
