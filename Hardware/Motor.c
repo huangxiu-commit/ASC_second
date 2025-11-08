@@ -16,6 +16,16 @@ void Motor_Init(void)
 
 void Motor_SetSpeed(int8_t Speed)
 {
+	if(Speed > 100)
+	{
+		Speed = 100;
+	}
+	
+	if(Speed < -100)
+	{
+		Speed = -100;
+	}
+	
 	if(Speed >= 0)
 	{
 		GPIO_SetBits(GPIOB, GPIO_Pin_12);
@@ -30,37 +40,34 @@ void Motor_SetSpeed(int8_t Speed)
 	}
 }
 
-void Motor_Tick(void)
-{
-	extern int16_t LoadSpeed;
-	
-}
+//void Motor_Tick(void)
+//{
+//	extern int16_t LoadSpeed;
+//	
+//}
 
-double kp;
-double ki;
-double kd;
+//double kp;
+//double ki;
+//double kd;
 
-uint16_t Pid(int16_t Error)//输入误差,输出占空比
-{
-	static int16_t Error0;//上一次的
-	static int16_t Error1;//新一次的
-	
-	static int16_t SumError;
-	
-	Error0 = Error1;
-	Error1 = Error;
-	
-	SumError += Error;
-	
-	int16_t out;
-	
-	out = kp * Error + ki * SumError + kd * ( Error1 - Error0);
-	
-	return out;
-	
-	
-	
-}
+//uint16_t Pid(int16_t Error)//输入误差,输出占空比
+//{
+//	static int16_t Error0;//上一次的
+//	static int16_t Error1;//新一次的
+//	
+//	static int16_t SumError;
+//	
+//	Error0 = Error1;
+//	Error1 = Error;
+//	
+//	SumError += Error;
+//	
+//	int16_t out;
+//	
+//	out = kp * Error + ki * SumError + kd * ( Error1 - Error0);
+//	
+//	return out;
+//}
 
 
 

@@ -15,9 +15,9 @@ void Encoder_Init(void)
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInitStructure.TIM_Period = 65536 - 1;	//ARR
-	TIM_TimeBaseInitStructure.TIM_Prescaler = 1 - 1;	//PSC
+	TIM_TimeBaseInitStructure.TIM_Prescaler = 2 - 1;	//PSC
 	TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
-	TIM_TimeBaseInit(TIM4, &TIM_TimeBaseInitStructure);
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStructure);
 	
 	TIM_ICInitTypeDef TIM_ICInitStructture;
 	TIM_ICStructInit(&TIM_ICInitStructture);
@@ -34,9 +34,9 @@ void Encoder_Init(void)
 	TIM_Cmd(TIM3, ENABLE);
 }
 
-uint16_t Encoder_Get(void)
+int16_t Encoder_Get(void)
 {
-	uint16_t Temp;
+	int16_t Temp;
 	Temp = TIM_GetCounter(TIM3);
 	TIM_SetCounter(TIM3, 0);
 	return Temp;
