@@ -18,8 +18,9 @@ extern int8_t RxPacketNum;//串口接收的数字
 extern int8_t Serial_Rxtype;//串口接收的数据类型,0为字符,1为数字
 
 float Target, Actual, Out;
-float Kp = 0, Ki = 0, Kd = 0;
+float Kp = 0.2, Ki = 0.2, Kd = 0;
 float Error0, Error1, Error2;
+float ErrorInt;
 
 int main(void)
 {
@@ -30,64 +31,79 @@ int main(void)
 	Motor_Init();
 	Key_Init();
 	
-	OLED_ShowString(1, 1, "Mode1");
-	OLED_ShowString(2, 1, "Speed:");
-	OLED_ShowSignedNum(2, 7, Speed_Ture, 3);
-	OLED_ShowString(3, 1, "PWM:");
-	OLED_ShowSignedNum(3, 5, PWM, 3);
-	
-	Motor_SetSpeed(PWM);
+//	OLED_ShowString(1, 1, "Mode1");
+	OLED_ShowString(1, 1, "Tar:");
+	OLED_ShowSignedNum(1, 4, Target, 3);
+	OLED_ShowString(2, 1, "Act:");
+	OLED_ShowSignedNum(2, 4, Actual, 3);
+	OLED_ShowString(3, 1, "Out:");
+	OLED_ShowSignedNum(3, 4, Out, 3);
 	
 	while(1)
 	{
 		KeyNum = Key_GetNum();
-		OLED_ShowSignedNum(2, 7, Speed_Ture, 3);
-		OLED_ShowSignedNum(3, 5, PWM, 3);
+		OLED_ShowSignedNum(1, 4, Target, 3);
+		OLED_ShowSignedNum(2, 4, Actual, 3);
+		OLED_ShowSignedNum(3, 4, Out, 3);
 		
 		if(KeyNum == 1)
 		{
-			if(PWM == 0)
-			{
-				PWM = 10;
-				Motor_SetSpeed(PWM);
-			}
-			else if(PWM != 0)
-			{
-				PWM = 0;
-				Motor_SetSpeed(PWM);
-			}
 			KeyNum = 0;
+			Motor_SetSpeed(10);
+			
+			if(Target <= 20)
+			{
+				Target += 10;
+			}
+			//调试用
+			
 			if(Table == 1)
 			{
 				Table = 2;
 				OLED_ShowString(1, 1, "Mode1");
+				Error0 = 0;//清除之前留下的
+				Error1 = 0;
+				Error2 = 0;
+				ErrorInt = 0;
+				Kp = 0;//变化为调好的预定值
+				Ki = 0;
+				Kd = 0;
 			}
 			
 			else if(Table == 2)
 			{
 				Table = 1;
 				OLED_ShowString(1, 1, "Mode2");
+				Error0 = 0;
+				Error1 = 0;
+				Error2 = 0;
+				ErrorInt = 0;
+				Kp = 0;//变化为调好的预定值
+				Ki = 0;
+				Kd = 0;
 			}
 			
 		}
 		
-		if(Table == 1&& Serial_RxFlag == 1)
-		{
-			OLED_ShowString(4, 1, "                ");
-			OLED_ShowString(4, 1, Serial_RxPacket);
-			
-			OLED_ShowSignedNum(4, 5, Serial_GetNum(), 3);
-			
-			//调试用
-			if(Serial_GetType() == 1)
-			{
-				PWM = Serial_GetNum();
-				Motor_SetSpeed(PWM);
-			}
-			//调试用
-			
-			Serial_RxFlag = 0;
-		}
+		
+		//存在问题:数字处理有误
+//		if(Table == 1&& Serial_RxFlag == 1)
+//		{
+//			OLED_ShowString(4, 1, "                ");
+//			OLED_ShowString(4, 1, Serial_RxPacket);
+//			
+//			OLED_ShowSignedNum(4, 5, Serial_GetNum(), 3);
+//			
+//			//调试用
+//			if(Serial_GetType() == 1)
+//			{
+//				PWM = Serial_GetNum();
+//				Motor_SetSpeed(PWM);
+//			}
+//			//调试用
+//			
+//			Serial_RxFlag = 0;
+//		}
 		
 	}
 }
@@ -98,14 +114,49 @@ void TIM1_UP_IRQHandler(void)//通道3
 	if(TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
 	{
 		Motor_count++;
-		if(Motor_count > 10)
+		if(Motor_count >= 10)
 		{
 			Motor_count = 0;
-			Speed_Ture = Encoder_Get();
+			
+			if(Table == 1)
+			{
+				Actual = Encoder_Get();
+				
+				Error2 = Error1;
+				Error1 = Error0;
+				Error0 = Target - Actual;
+				
+				Out += Kp * (Error0 - Error1) + Ki * Error0 + Kd * (Error0 - 2 * Error1 + Error2);
+				
+				if(Out > 100){Out = 100;}
+				if(Out < -100){Out = -100;}
+				
+				Motor_SetSpeed(Out);
+			}
+			
+			else if(Table == 2)
+			{
+				Actual += Encoder_Get();
+				
+				Error1 = Error0;
+				Error0 = Target - Actual;
+				
+				ErrorInt += Error0;
+				
+				Out = Kp * Error0 + Ki * ErrorInt + Kd * (Error0 - Error1);
+				
+				if(Out > 100){Out = 100;}
+				if(Out < -100){Out = -100;}
+				
+				Motor_SetSpeed(Out);
+			}
 		}
 		
+		
+		
 		Key_Tick();
-//		PID_Tick();//也是10s一次
+		
+		
 		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
 	}
 }

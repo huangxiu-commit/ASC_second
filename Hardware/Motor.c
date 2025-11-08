@@ -14,7 +14,7 @@ void Motor_Init(void)
 	PWM_Init();
 }
 
-void Motor_SetSpeed(int8_t PWM)
+void Motor_SetSpeed(float PWM)
 {
 	if(PWM > 100)
 	{
@@ -39,35 +39,3 @@ void Motor_SetSpeed(int8_t PWM)
 		PWM_SetCompare3(-PWM);
 	}
 }
-
-//void Motor_Tick(void)
-//{
-//	extern int16_t LoadSpeed;
-//	
-//}
-
-//double kp;
-//double ki;
-//double kd;
-
-//uint16_t Pid(int16_t Error)//输入误差,输出占空比
-//{
-//	static int16_t Error0;//上一次的
-//	static int16_t Error1;//新一次的
-//	
-//	static int16_t SumError;
-//	
-//	Error0 = Error1;
-//	Error1 = Error;
-//	
-//	SumError += Error;
-//	
-//	int16_t out;
-//	
-//	out = kp * Error + ki * SumError + kd * ( Error1 - Error0);
-//	
-//	return out;
-//}
-
-
-
