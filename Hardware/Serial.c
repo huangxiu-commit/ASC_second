@@ -1,7 +1,6 @@
 #include "stm32f10x.h"                  // Device header
 #include <stdio.h>
 #include <stdarg.h>
-#include "OLED.h"
 
 char Serial_RxPacket[100];
 uint8_t Serial_RxFlag;
@@ -140,4 +139,20 @@ void USART1_IRQHandler(void)
 		USART_ClearITPendingBit(USART1, USART_IT_RXNE);
 	}
 		
+}
+
+int fputc(int ch, FILE *f)
+{
+	Serial_SendByte(ch);			//将printf的底层重定向到自己的发送字节函数
+	return ch;
+}
+
+void Serial_Printf(char *format, ...)
+{
+	char String[100];				//定义字符数组
+	va_list arg;					//定义可变参数列表数据类型的变量arg
+	va_start(arg, format);			//从format开始，接收参数列表到arg变量
+	vsprintf(String, format, arg);	//使用vsprintf打印格式化字符串和参数列表到字符数组中
+	va_end(arg);					//结束变量arg
+	Serial_SendString(String);		//串口发送字符数组（字符串）
 }

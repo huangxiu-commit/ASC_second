@@ -36,6 +36,9 @@ int main(void)
 	OLED_ShowSignedNum(1, 4, Target, 3);
 	OLED_ShowString(2, 1, "Act:");
 	OLED_ShowSignedNum(2, 4, Actual, 3);
+	
+	Serial_Printf("Num=%d\r\n",666);
+	
 	OLED_ShowString(3, 1, "Out:");
 	OLED_ShowSignedNum(3, 4, Out, 3);
 	
@@ -49,7 +52,6 @@ int main(void)
 		if(KeyNum == 1)
 		{
 			KeyNum = 0;
-			Motor_SetSpeed(10);
 			
 			if(Target <= 20)
 			{
@@ -103,14 +105,21 @@ int main(void)
 				}
 			}
 			
-			if(found == 1)
+			if(found == 1 && Serial_RxPacket[7] != '\0')
 			{
 				for(int i =7;i<=9;i++)
 				{
 					TempNum = TempNum * 10 + (Serial_RxPacket[i] - '0');
 				}
 				
-				Target = TempNum;
+				if(Serial_RxPacket[6] == '+')
+				{
+					Target = TempNum;
+				}
+				else if (Serial_RxPacket[6] == '-')
+				{
+					Target = - TempNum;
+				}
 			}
 			
 			
