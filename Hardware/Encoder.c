@@ -2,14 +2,18 @@
 
 void Encoder_Init(void)
 {
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);//读取电机1的速度值
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);//读取电机2的位置值
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 	
 	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 |GPIO_Pin_7;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_Init(GPIOB, &GPIO_InitStructure);//电机2
 	
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
@@ -30,8 +34,10 @@ void Encoder_Init(void)
 	TIM_ICInit(TIM3, &TIM_ICInitStructture);
 	
 	TIM_EncoderInterfaceConfig(TIM3, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
+	TIM_EncoderInterfaceConfig(TIM4, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);//电机2
 
 	TIM_Cmd(TIM3, ENABLE);
+	TIM_Cmd(TIM4, ENABLE);
 }
 
 int16_t Encoder_Get(void)
@@ -39,6 +45,14 @@ int16_t Encoder_Get(void)
 	int16_t Temp;
 	Temp = TIM_GetCounter(TIM3);
 	TIM_SetCounter(TIM3, 0);
+	return Temp;
+}
+
+int16_t Encoder_Get2(void)
+{
+	int16_t Temp;
+	Temp = TIM_GetCounter(TIM4);
+	TIM_SetCounter(TIM4,0);
 	return Temp;
 }
 

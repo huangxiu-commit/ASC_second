@@ -1,16 +1,10 @@
 #include "stm32f10x.h"                  // Device header
 #include <stdio.h>
 #include <stdarg.h>
+#include "OLED.h"
 
 char Serial_RxPacket[100];
 uint8_t Serial_RxFlag;
-
-int8_t Serial_Rxtype = 0;//为0时表示文本,为1时表示数字
-char Serial_RxNum1[10];//去除数字正负号后的数字
-int8_t RxPacketNum = 0;
-int8_t Serial_RxSign;
-
-int8_t Permanent_RxPacketNum = 0;  // 新增的永久变量
 
 void Serial_Init(void)
 {
@@ -117,55 +111,20 @@ void USART1_IRQHandler(void)
 			if(RxData == '@')
 			{
 				RxState = 1;
-				Serial_Rxtype = 0;//输入类型
 				pRxPacket = 0;
-				RxPacketNum = 0;//重置串口输入的数字
-			}
-			else if(RxData == '$')
-			{
-				RxState = 1;
-				Serial_Rxtype = 1;
-				pRxPacket = 0;
-				RxPacketNum = 0;
 			}
 		}
 		else if(RxState == 1)
 		{
+			
 			if(RxData == '\r')
 			{
 				RxState = 2;
 			}
 			else
 			{
-				if(Serial_Rxtype == 0)
-				{
-					Serial_RxPacket[pRxPacket] = RxData;
-					pRxPacket++;
-				}
-				
-				else if(Serial_Rxtype == 1)
-				{
-					Serial_RxPacket[pRxPacket] = RxData;
-					if(pRxPacket == 0)
-					{
-						if(RxData == '+')
-						{
-							Serial_RxSign = 1;
-						}
-						else if(RxData == '-')
-						{
-							Serial_RxSign = -1;
-						}
-						else
-						{
-							Serial_RxNum1[pRxPacket] = Serial_RxPacket[pRxPacket] - '0';
-							RxPacketNum = RxPacketNum * 10 +Serial_RxNum1[pRxPacket];
-						}
-					}
-					
-					pRxPacket++;
-					
-				}
+				Serial_RxPacket[pRxPacket] = RxData;
+				pRxPacket++;
 			}
 		}
 		else if(RxState == 2)
@@ -174,13 +133,6 @@ void USART1_IRQHandler(void)
 			{			
 				RxState = 0;
 				Serial_RxPacket[pRxPacket] = '\0';
-				
-				if(Serial_Rxtype == 1)
-				{
-					RxPacketNum *= Serial_RxSign;
-					Permanent_RxPacketNum = RxPacketNum;  // 永久变量
-				}
-				
 				Serial_RxFlag = 1;
 			}
 		}
@@ -188,18 +140,4 @@ void USART1_IRQHandler(void)
 		USART_ClearITPendingBit(USART1, USART_IT_RXNE);
 	}
 		
-}
-
-int8_t Serial_GetNum(void)
-{
-	if(Serial_Rxtype == 1)
-	{
-		return Permanent_RxPacketNum;
-	}
-	return 0;
-}
-
-int8_t Serial_GetType(void)
-{
-	return Serial_Rxtype;
 }

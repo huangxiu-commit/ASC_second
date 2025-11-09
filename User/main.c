@@ -14,11 +14,11 @@ int16_t Speed_Ture;//实际速度值
 int16_t Speed_Load;//目标速度
 int16_t PWM;
 
-extern int8_t RxPacketNum;//串口接收的数字
-extern int8_t Serial_Rxtype;//串口接收的数据类型,0为字符,1为数字
+char MingLing1[7] = "speed%";
+char MingLing2[11];
 
 float Target, Actual, Out;
-float Kp = 0.2, Ki = 0.2, Kd = 0;
+float Kp = 0.2, Ki = 0.2, Kd = 0;//初始默认任务一的
 float Error0, Error1, Error2;
 float ErrorInt;
 
@@ -87,23 +87,36 @@ int main(void)
 		
 		
 		//存在问题:数字处理有误
-//		if(Table == 1&& Serial_RxFlag == 1)
-//		{
-//			OLED_ShowString(4, 1, "                ");
-//			OLED_ShowString(4, 1, Serial_RxPacket);
-//			
-//			OLED_ShowSignedNum(4, 5, Serial_GetNum(), 3);
-//			
-//			//调试用
-//			if(Serial_GetType() == 1)
-//			{
-//				PWM = Serial_GetNum();
-//				Motor_SetSpeed(PWM);
-//			}
-//			//调试用
-//			
-//			Serial_RxFlag = 0;
-//		}
+		if(Table == 1&& Serial_RxFlag == 1)
+		{
+			OLED_ShowString(4, 1, "                ");
+			OLED_ShowString(4, 1, Serial_RxPacket);
+			
+			uint8_t found=1;//若为0则表示不是指令Speed
+			uint8_t TempNum = 0;
+			
+			for(int i=0;i<6;i++)
+			{
+				if(Serial_RxPacket[i] != MingLing1[i])
+				{
+					found = 0;
+				}
+			}
+			
+			if(found == 1)
+			{
+				for(int i =7;i<=9;i++)
+				{
+					TempNum = TempNum * 10 + (Serial_RxPacket[i] - '0');
+				}
+				
+				Target = TempNum;
+			}
+			
+			
+			
+			Serial_RxFlag = 0;
+		}
 		
 	}
 }
@@ -136,7 +149,7 @@ void TIM1_UP_IRQHandler(void)//通道3
 			
 			else if(Table == 2)
 			{
-				Actual += Encoder_Get();
+				Actual += Encoder_Get2();
 				
 				Error1 = Error0;
 				Error0 = Target - Actual;
@@ -152,10 +165,7 @@ void TIM1_UP_IRQHandler(void)//通道3
 			}
 		}
 		
-		
-		
 		Key_Tick();
-		
 		
 		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
 	}

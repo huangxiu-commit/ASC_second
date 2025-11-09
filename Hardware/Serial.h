@@ -12,7 +12,4 @@ void Serial_SendNumber(uint32_t Number, uint8_t Length);
 
 uint8_t Serial_GetRxFlag(void);
 
-int8_t Serial_GetNum(void);
-int8_t Serial_GetType(void);
-
 #endif
